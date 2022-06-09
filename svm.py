@@ -66,7 +66,7 @@ def learn_Lasso(x_train, y_train, x_test, y_test, a=1.0):
 
 ################################################
 def learn_Svm(x_train, y_train, x_test, y_test):
-    machine = svm.SVR(kernel="rbf", max_iter=10**2)
+    machine = svm.SVR(kernel="linear", max_iter=10**2)
     machine.fit(x_train, y_train)
     r2train = machine.score(x_train,y_train)
     r2test = machine.score(x_test,y_test)
@@ -82,6 +82,28 @@ def learn_LinearSvm(x_train, y_train, x_test, y_test):
     r2test = machine.score(x_test,y_test)
     return (machine, r2train, r2test)
 
+################################################
+
+######### For evaluate hyper parameters #######
+def learn_ANN(x_train, y_train, x_test, y_test, arch):
+
+    R = []
+    reg = MLPRegressor(activation='relu', solver='adam',
+                       alpha=1e-5, hidden_layer_sizes=arch,
+                       random_state=1, early_stopping=False)
+    reg.warm_start = False
+    # learn ANN, but stop the learning at itr=t in order to record stats
+    for t in range(10, MaxItr+1, 10):
+        reg.max_iter = t
+        reg.fit(x_train, y_train)
+        reg.warm_start = True                
+
+        # calculate the prediction score (R^2)
+        r2train = reg.score(x_train,y_train)
+        r2test = reg.score(x_test,y_test)
+        R.append((t,r2train, r2test))
+
+    return R
 ################################################
 
 try:
