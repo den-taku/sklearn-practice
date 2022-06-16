@@ -75,6 +75,16 @@ def learn_Svm(x_train, y_train, x_test, y_test):
 ################################################
 
 ################################################
+def learn_Svm_iter(x_train, y_train, x_test, y_test, max_iter):
+    machine = svm.SVR(kernel="rbf", max_iter=max_iter)
+    machine.fit(x_train, y_train)
+    r2train = machine.score(x_train,y_train)
+    r2test = machine.score(x_test,y_test)
+    return (machine, r2train, r2test)
+
+################################################
+
+################################################
 def learn_LinearSvm(x_train, y_train, x_test, y_test):
     machine = svm.LinearSVR(max_iter=10**5)
     machine.fit(x_train, y_train)
@@ -84,8 +94,18 @@ def learn_LinearSvm(x_train, y_train, x_test, y_test):
 
 ################################################
 
+################################################
+def learn_LinearSvm_iter(x_train, y_train, x_test, y_test, max_iter):
+    machine = svm.LinearSVR(max_iter=max_iter)
+    machine.fit(x_train, y_train)
+    r2train = machine.score(x_train,y_train)
+    r2test = machine.score(x_test,y_test)
+    return (machine, r2train, r2test)
+
+################################################
+
 ######### For evaluate hyper parameters #######
-def learn_ANN(x_train, y_train, x_test, y_test, arch):
+def learn_Tuning(x_train, y_train, x_test, y_test, arch):
 
     R = []
     reg = MLPRegressor(activation='relu', solver='adam',
@@ -115,89 +135,147 @@ except:
 
 ### experiment1 ###
 
-print("SVR:")
-print("Lambda\t{}".format(lmd))
-f = open(sys.argv[1])
-arr = f.readline().split(',')
-print("NumDesc\t{}".format(len(arr)-1))
-f.close()
+# print("SVR:")
+# print("Lambda\t{}".format(lmd))
+# f = open(sys.argv[1])
+# arr = f.readline().split(',')
+# print("NumDesc\t{}".format(len(arr)-1))
+# f.close()
 
-for split_seed in range(1, Times+1):
-    kf = KFold(n_splits=Fold, shuffle=True, random_state=split_seed)
+# for split_seed in range(1, Times+1):
+#     kf = KFold(n_splits=Fold, shuffle=True, random_state=split_seed)
 
-    fold = 0
-    Tr = []
-    Ts = []
-    Tim = []
-    # NonZ = []
-    for train, test in kf.split(x):
-        fold += 1
-        start_time = time.time()
-        # _, nonzero, r2train, r2test = learn_Lasso(x[train], y[train], x[test], y[test], a=lmd)
-        _, r2train, r2test = learn_Svm(x[train], y[train], x[test], y[test])
-        comp_time = time.time() - start_time
-        Tr.append(r2train)
-        Ts.append(r2test)
-        Tim.append(comp_time)
-        # NonZ.append(nonzero)
-    print("{}\tTrain".format(split_seed), end="")
-    for v in Tr:
-        print("\t{:.6f}".format(v), end="")
-    print()
-    print(" \tTest", end="")
-    for v in Ts:
-        print("\t{:.6f}".format(v), end="")
-    print()
-    # print(" \tTime", end="")
-    # for v in Tim:
-    #     print("\t{:.6f}".format(v), end="")
-    print()
-    # print(" \tNonzero", end="")
-    # for v in NonZ:
-    #     print("\t{}".format(v), end="")
-    # print()
+#     fold = 0
+#     Tr = []
+#     Ts = []
+#     Tim = []
+#     for train, test in kf.split(x):
+#         fold += 1
+#         start_time = time.time()
+#         _, r2train, r2test = learn_Svm(x[train], y[train], x[test], y[test])
+#         comp_time = time.time() - start_time
+#         Tr.append(r2train)
+#         Ts.append(r2test)
+#         Tim.append(comp_time)
+#     print("{}\tTrain".format(split_seed), end="")
+#     for v in Tr:
+#         print("\t{:.6f}".format(v), end="")
+#     print()
+#     print(" \tTest", end="")
+#     for v in Ts:
+#         print("\t{:.6f}".format(v), end="")
+#     print()
+#     print()
     
 ### experiment2 ###
 
-print("LinearSVM")
+# print("LinearSVM")
+# print("Lambda\t{}".format(lmd))
+# f = open(sys.argv[1])
+# arr = f.readline().split(',')
+# print("NumDesc\t{}".format(len(arr)-1))
+# f.close()
+
+# for split_seed in range(1, Times+1):
+#     kf = KFold(n_splits=Fold, shuffle=True, random_state=split_seed)
+
+#     fold = 0
+#     Tr = []
+#     Ts = []
+#     Tim = []
+#     for train, test in kf.split(x):
+#         fold += 1
+#         start_time = time.time()
+#         _, r2train, r2test = learn_LinearSvm(x[train], y[train], x[test], y[test])
+#         comp_time = time.time() - start_time
+#         Tr.append(r2train)
+#         Ts.append(r2test)
+#         Tim.append(comp_time)
+#     print("{}\tTrain".format(split_seed), end="")
+#     for v in Tr:
+#         print("\t{:.6f}".format(v), end="")
+#     print()
+#     print(" \tTest", end="")
+#     for v in Ts:
+#         print("\t{:.6f}".format(v), end="")
+#     print()
+#     print()
+
+### experiment3 ###
+
+print("SVR tuning:")
 print("Lambda\t{}".format(lmd))
 f = open(sys.argv[1])
 arr = f.readline().split(',')
 print("NumDesc\t{}".format(len(arr)-1))
 f.close()
+for max_iter in [10**1, 10**2, 10**3, 10**4, 10**5, 10**6]:
+    print("max_iter = {}".format(max_iter))
+    trainMid = []
+    testMid = []
+    for split_seed in range(100, Times+100):
+        kf = KFold(n_splits=Fold, shuffle=True, random_state=split_seed)
 
-for split_seed in range(1, Times+1):
-    kf = KFold(n_splits=Fold, shuffle=True, random_state=split_seed)
+        fold = 0
+        Tr = []
+        Ts = []
+        Tim = []
+        for train, test in kf.split(x):
+            fold += 1
+            start_time = time.time()
+            _, r2train, r2test = learn_Svm_iter(x[train], y[train], x[test], y[test], max_iter)
+            comp_time = time.time() - start_time
+            Tr.append(r2train)
+            Ts.append(r2test)
+            Tim.append(comp_time)
+        print("{}\tTrain".format(split_seed), end="")
+        for v in Tr:
+            print("\t{:.6f}".format(v), end="")
+            trainMid.append(v)
+        print()
+        print(" \tTest", end="")
+        for v in Ts:
+            print("\t{:.6f}".format(v), end="")
+            testMid.append(v)
+        print()
+        print()
+    trainMid.sort()
+    testMid.sort()
+    print("testMid = {}, trainMid = {}".format((trainMid[24] + trainMid[25])/2, (testMid[24] + testMid[25])/2))
+    print()
+    
+### experiment4 ###
 
-    fold = 0
-    Tr = []
-    Ts = []
-    Tim = []
-    # NonZ = []
-    for train, test in kf.split(x):
-        fold += 1
-        start_time = time.time()
-        # _, nonzero, r2train, r2test = learn_Lasso(x[train], y[train], x[test], y[test], a=lmd)
-        _, r2train, r2test = learn_LinearSvm(x[train], y[train], x[test], y[test])
-        comp_time = time.time() - start_time
-        Tr.append(r2train)
-        Ts.append(r2test)
-        Tim.append(comp_time)
-        # NonZ.append(nonzero)
-    print("{}\tTrain".format(split_seed), end="")
-    for v in Tr:
-        print("\t{:.6f}".format(v), end="")
-    print()
-    print(" \tTest", end="")
-    for v in Ts:
-        print("\t{:.6f}".format(v), end="")
-    print()
-    # print(" \tTime", end="")
-    # for v in Tim:
-    #     print("\t{:.6f}".format(v), end="")
-    print()
-    # print(" \tNonzero", end="")
-    # for v in NonZ:
-    #     print("\t{}".format(v), end="")
-    # print()
+# print("SVR Lineartuning:")
+# print("Lambda\t{}".format(lmd))
+# f = open(sys.argv[1])
+# arr = f.readline().split(',')
+# print("NumDesc\t{}".format(len(arr)-1))
+# f.close()
+# for max_iter in [10**1, 10**2, 10**3, 10**4, 10**5]:
+#     print("max_iter = {}".format(max_iter))
+#     for split_seed in range(1, Times+1):
+#         kf = KFold(n_splits=Fold, shuffle=True, random_state=split_seed)
+
+#         fold = 0
+#         Tr = []
+#         Ts = []
+#         Tim = []
+#         for train, test in kf.split(x):
+#             fold += 1
+#             start_time = time.time()
+#             _, r2train, r2test = learn_LinearSvm_iter(x[train], y[train], x[test], y[test], max_iter)
+#             comp_time = time.time() - start_time
+#             Tr.append(r2train)
+#             Ts.append(r2test)
+#             Tim.append(comp_time)
+#         print("{}\tTrain".format(split_seed), end="")
+#         for v in Tr:
+#             print("\t{:.6f}".format(v), end="")
+#         print()
+#         print(" \tTest", end="")
+#         for v in Ts:
+#             print("\t{:.6f}".format(v), end="")
+#         print()
+#         print()
     
